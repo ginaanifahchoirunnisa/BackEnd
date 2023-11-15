@@ -34,7 +34,7 @@ exports.create = (req, res) => {
 }
 
 
-exports.findOne = async(req,res) => {
+exports.getById = async(req,res) => {
     // const user = new User({
     //     userName : req.body.userName,
     //     accountNumber : req.body.accountNumber,
@@ -51,4 +51,26 @@ exports.findOne = async(req,res) => {
     }
 
     
+}
+
+
+exports.editData = async(req,res) =>{
+    const userId = req.params.id
+    const dataUpdated = req.body
+    User.findByIdAndUpdate(userId, dataUpdated)
+    .then((result)=>{
+        if(!result){
+            res.status(404).send({
+                message : "Post Not Found"
+            })
+        }
+
+        res.send({
+            dataUpdated
+        })
+    }).catch((error) => {
+        res.status(409).send({
+            message : error.message || "Some error while update data user"
+        })
+    })
 }

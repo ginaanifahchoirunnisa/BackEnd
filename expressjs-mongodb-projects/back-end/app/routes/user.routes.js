@@ -6,7 +6,8 @@ module.exports = (app) =>{
     /* USER ROUTES REQUEST API's */
     router.get('/', users.findAll)
     router.post('/', users.create)
-    router.get('/:id', users.findOne)
+    router.get('/:id', users.getById)
+    router.put('/:id', users.editData)
 
 
     app.use('/api/users', router)
