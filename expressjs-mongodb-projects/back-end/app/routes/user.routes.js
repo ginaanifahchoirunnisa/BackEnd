@@ -11,6 +11,7 @@ module.exports = (app) =>{
     router.get('/:id', users.getById)
     router.put('/:id', users.editData)
     router.delete('/:id', users.delete)
+    router.post('/login', users.loginUser)
 
 
     app.use('/api/users', router)

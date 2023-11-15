@@ -3,7 +3,7 @@ module.exports = (mongoose) =>{
         {
             userName: String,
             accountNumber: String,
-            emailAddress: String,
+            emailAddress: {type: String, unique: true},
             identityNumber: String
         },
         {
@@ -32,7 +32,7 @@ module.exports = (mongoose) =>{
 
 
 
-    
+
     /***    mongoose: This is the Mongoose library, which is an Object Data Modeling (ODM) library for MongoDB and Node.js. It provides a higher-level abstraction for interacting with MongoDB.
 
     .model(): This is a method provided by Mongoose to create a model. A Mongoose model is a constructor function that has a pre-defined schema, and it represents a collection in the MongoDB database.
