@@ -34,13 +34,21 @@ exports.create = (req, res) => {
 }
 
 
-exports.getById = (req,res) => {
-    const user = new User({
-        userName : req.body.userName,
-        accountNumber : req.body.accountNumber,
-        emailAddress : req.body.emailAddress,
-        identityNumber : req.body.identityNumber
-    })
+exports.findOne = async(req,res) => {
+    // const user = new User({
+    //     userName : req.body.userName,
+    //     accountNumber : req.body.accountNumber,
+    //     emailAddress : req.body.emailAddress,
+    //     identityNumber : req.body.identityNumber
+    // })
+    const userId = req.params.id
+    try{
+
+        const user = await User.findById(userId)
+        res.send(user)
+    }catch(err){
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 
     
 }
