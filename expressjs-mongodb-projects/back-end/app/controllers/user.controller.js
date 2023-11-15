@@ -3,9 +3,9 @@ const db = require('../models')
 const User = db.users
 
 
-exports.findAll = (req,res) => {
+exports.findAll = async(req,res) => {
 
-    User.find()
+   await User.find()
     .then((result)=>{
         res.send(result)
     }).catch((error)=>{
@@ -35,12 +35,6 @@ exports.create = (req, res) => {
 
 
 exports.getById = async(req,res) => {
-    // const user = new User({
-    //     userName : req.body.userName,
-    //     accountNumber : req.body.accountNumber,
-    //     emailAddress : req.body.emailAddress,
-    //     identityNumber : req.body.identityNumber
-    // })
     const userId = req.params.id
     try{
 
@@ -61,16 +55,37 @@ exports.editData = async(req,res) =>{
     .then((result)=>{
         if(!result){
             res.status(404).send({
-                message : "Post Not Found"
+                message : "Data User Not Found"
             })
         }
-
         res.send({
             dataUpdated
         })
     }).catch((error) => {
         res.status(409).send({
             message : error.message || "Some error while update data user"
+        })
+    })
+}
+
+
+exports.delete=(req, res) => {
+
+    const userId = req.params.id
+
+     User.findOneAndDelete(userId)
+    .then((result)=>{
+        if(!result){
+            res.status(404).send({
+                message : "Data user not found"
+            })
+        }
+        res.send({
+            message : "Data user was deleted"
+        })
+    }).catch((error)=>{
+        res.status(409).send({
+            message : error.message || "Some error occur while deteled data user"
         })
     })
 }
