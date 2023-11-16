@@ -1,6 +1,7 @@
 //object db yang ada didalam objek model
 const db = require("../models");
 const User = db.users;
+/** preparing for jwt token */
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
@@ -10,26 +11,32 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 
+/** secret key for jwt */
 const secretKey = "g1Yzdm93oF9x8NuE2OqJ9LpRz3Hs6TbV";
 
+/** USER LOGIN */
 exports.loginUser = async (req, res) => {
   const email = req.body.emailAddress;
-  // const identityNumber = req.body.identityNumber
+  const accountNumber = req.body.accountNumber;
 
-  // try{
-  //     const user = await User.findOne({emailAddress : email})
+  try {
+    const existingUserCheck = await User.findOne({ emailAddress: email });
+    if (existingUserCheck) {
+    //   const token = jwt.sign({ userId: user.id }, secretKey, {
+    //     expiresIn: "1h",
+    //   });
+      res.json({ message: "Login successful", token });
+    } else {
+        // return res.status(401).json({error : 'Invalid Credentials'})
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 
-  //     if(!user){
-  //         return res.status(404).json({error : 'Invalid credentials'})
-  //     }
 
-  // }catch((err)=>{
-
-  // })
-
-  res.send(email);
 };
 
+/** GET ALL DATA USER */
 exports.findAll = async (req, res) => {
   await User.find()
     .then((result) => {
@@ -42,6 +49,25 @@ exports.findAll = async (req, res) => {
     });
 };
 
+/** USER REGISTER */
+// exports.create = (req, res) => {
+//     const user = new User({
+//         userName : req.body.userName,
+//         accountNumber : req.body.accountNumber,
+//         emailAddress : req.body.emailAddress,
+//         identityNumber : req.body.identityNumber
+//     })
+
+//     user.save(user)
+//     .then((result)=>{
+//         res.send(result)
+//     }).catch((error)=>{
+//         res.status(409).send({
+//             message:error.message || "some error while add new user"
+//         })
+//     })
+// }
+
 exports.create = async (req, res) => {
   const email = req.body.emailAddress;
   const accountNumber = req.body.accountNumber;
@@ -49,7 +75,7 @@ exports.create = async (req, res) => {
   try {
     const existingUserCheck = await User.findOne({ emailAddress: email });
     if (existingUserCheck) {
-      return res.status(400).json({ error: "Email already exists" });
+      return res.status(400).json({existingUserCheck });
     } else {
       // res.send({message : 'User data yesa'})
       //  const token = jwt.sign({})
@@ -74,6 +100,8 @@ exports.create = async (req, res) => {
   }
 };
 
+
+/** GET DATA USER BY ID */
 exports.getById = async (req, res) => {
   const userId = req.params.id;
   try {
@@ -84,6 +112,7 @@ exports.getById = async (req, res) => {
   }
 };
 
+/** EDIT DATA USER */
 exports.editData = async (req, res) => {
   const userId = req.params.id;
   const dataUpdated = req.body;
@@ -105,6 +134,7 @@ exports.editData = async (req, res) => {
     });
 };
 
+/** DELETE USER */
 exports.delete = (req, res) => {
   const userId = req.params.id;
 
@@ -125,3 +155,45 @@ exports.delete = (req, res) => {
       });
     });
 };
+
+/** GET DATA USER BY */
+exports.getUserByAccountNumber = async(req,res)=>{
+    const userAccountNumber = req.params.id
+
+    // res.send(userAccountNumber)
+
+   try{
+
+        const findUser = await User.findOne({accountNumber : userAccountNumber})
+        if(!findUser){
+            res.send({message : 'User not found'})
+        }else{
+            res.send(findUser)
+        }
+       // res.send(findUser)
+    }catch{
+        res.status(500).send({message:'Internal server error'})
+
+    }
+}
+
+
+exports.getUserByIdentityNumber = async(req,res)=>{
+  const userIdentityNumber = req.params.id
+
+  // res.send(userIdentityNumber)
+
+ try{
+
+      const findUser = await User.findOne({identityNumber : userIdentityNumber})
+      if(!findUser){
+          res.send({message : 'User not found'})
+      }else{
+          res.send(findUser)
+      }
+     // res.send(findUser)
+  }catch{
+      res.status(500).send({message:'Internal server error'})
+
+  }
+}

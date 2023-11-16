@@ -13,6 +13,7 @@ const db = require('./app/models/') //akkan memanggil index
 db.mongoose.connect(db.url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,  
+    
 })
 .then(()=>{
 console.log('database connected')
@@ -26,7 +27,6 @@ app.get('/', (req,res)=>{
         message : "wellcome to idstack express tutorial"
     })
 })
-
 
 
 require('./app/routes/user.routes')(app)
