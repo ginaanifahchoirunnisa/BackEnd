@@ -17,36 +17,34 @@ const secretKey = "g1Yzdm93oF9x8NuE2OqJ9LpRz3Hs6TbV";
 /** USER LOGIN */
 exports.loginUser = async (req, res) => {
   const email = req.body.emailAddress;
- // const accountNumber = req.body.accountNumber;
+  // const accountNumber = req.body.accountNumber;
 
   try {
     const existingUserCheck = await User.findOne({ emailAddress: email });
-      if (existingUserCheck) {
-        const token = jwt.sign({ userId: existingUserCheck.id }, secretKey, {
-          expiresIn: "1h",
-        });
-      
-        return res.json({token});
-      } else {
-          return res.status(401).json({error : 'Invalid Credentials'})
-      }
-   // res.send(existingUserCheck)
+    if (existingUserCheck) {
+      const token = jwt.sign({ userId: existingUserCheck.id }, secretKey, {
+        expiresIn: "1h",
+      });
+
+      return res.json({ token });
+    } else {
+      return res.status(401).json({ error: "Invalid Credentials" });
+    }
+    // res.send(existingUserCheck)
   } catch (error) {
-    console.log('ini eero',error)
-        
+    console.log("ini eero", error);
+
     res.status(500).json(error);
   }
-
-
 };
 
 /** VERIFY TOKEN  */
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization;
-  console.log('INI TOKEN =>  ', token)
+  console.log("INI TOKEN =>  ", token);
 
-  if(!token){
-    return res.status(401).json({error : 'Unauthorized : No token provided'})
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized : No token provided" });
   }
 
   //const decoded = await jwtVerify(token, secretKey);
@@ -59,58 +57,27 @@ const verifyToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    res.status(401).json({ error: "Unauthorized: Invalid token" });
   }
-}
-
-/** GET ALL DATA USER */
-// exports.findAll = async (req, res) => {
-//   await User.find()
-//     .then((result) => {
-//       res.send(result);
-//     })
-//     .catch((error) => {
-//       res.status(500).send({
-//         message: error.message || "some error while retrieving users",
-//       });
-//     });
-// };
-
-exports.findAll = async (req, res) => {
-try{
-   // Verify token before allowing access to the protected route
-  await verifyToken(req,res, async () => {
-    const users = await User.find();
-    res.json(users)
-  })
-}catch(error){
-  console.error(error);
-    res.status(500).json({
-      message: error.message || 'Some error while retrieving users',
-    });
-}
 };
 
+/** GET ALL DATA USER */
+exports.findAll = async (req, res) => {
+  try {
+    // Verify token before allowing access to the protected route
+    await verifyToken(req, res, async () => {
+      const users = await User.find();
+      res.json(users);
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: error.message || "Some error while retrieving users",
+    });
+  }
+};
 
 /** USER REGISTER */
-// exports.create = (req, res) => {
-//     const user = new User({
-//         userName : req.body.userName,
-//         accountNumber : req.body.accountNumber,
-//         emailAddress : req.body.emailAddress,
-//         identityNumber : req.body.identityNumber
-//     })
-
-//     user.save(user)
-//     .then((result)=>{
-//         res.send(result)
-//     }).catch((error)=>{
-//         res.status(409).send({
-//             message:error.message || "some error while add new user"
-//         })
-//     })
-// }
-
 exports.create = async (req, res) => {
   const email = req.body.emailAddress;
   const accountNumber = req.body.accountNumber;
@@ -118,7 +85,7 @@ exports.create = async (req, res) => {
   try {
     const existingUserCheck = await User.findOne({ emailAddress: email });
     if (existingUserCheck) {
-      return res.status(400).json({existingUserCheck });
+      return res.status(400).json({ existingUserCheck });
     } else {
       // res.send({message : 'User data yesa'})
       //  const token = jwt.sign({})
@@ -143,13 +110,14 @@ exports.create = async (req, res) => {
   }
 };
 
-
 /** GET DATA USER BY ID */
 exports.getById = async (req, res) => {
   const userId = req.params.id;
   try {
-    const user = await User.findById(userId);
-    res.send(user);
+    await verifyToken(req, res, async () => {
+      const user = await User.findById(userId);
+      res.json(user);
+    });
   } catch (err) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -200,36 +168,31 @@ exports.delete = (req, res) => {
 };
 
 /** GET DATA USER BY ACCOUNT NUMBER*/
-exports.getUserByAccountNumber = async(req,res)=>{
-    const userAccountNumber = req.params.id
-   try{
-
-        const findUser = await User.findOne({accountNumber : userAccountNumber})
-        if(!findUser){
-            res.send({message : 'User not found'})
-        }else{
-            res.send(findUser)
-        }
-    }catch{
-        res.status(500).send({message:'Internal server error'})
-
+exports.getUserByAccountNumber = async (req, res) => {
+  const userAccountNumber = req.params.id;
+  try {
+    const findUser = await User.findOne({ accountNumber: userAccountNumber });
+    if (!findUser) {
+      res.send({ message: "User not found" });
+    } else {
+      res.send(findUser);
     }
-}
-
+  } catch {
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
 
 /** GET BY IDENTITY NUMBER */
-exports.getUserByIdentityNumber = async(req,res)=>{
-  const userIdentityNumber = req.params.id
- try{
-
-      const findUser = await User.findOne({identityNumber : userIdentityNumber})
-      if(!findUser){
-          res.send({message : 'User not found'})
-      }else{
-          res.send(findUser)
-      }
-  }catch{
-      res.status(500).send({message:'Internal server error'})
-
+exports.getUserByIdentityNumber = async (req, res) => {
+  const userIdentityNumber = req.params.id;
+  try {
+    const findUser = await User.findOne({ identityNumber: userIdentityNumber });
+    if (!findUser) {
+      res.send({ message: "User not found" });
+    } else {
+      res.send(findUser);
+    }
+  } catch {
+    res.status(500).send({ message: "Internal server error" });
   }
-}
+};
