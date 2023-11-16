@@ -62,6 +62,18 @@ const verifyToken = async (req, res, next) => {
 };
 
 /** GET ALL DATA USER */
+// exports.findAll = async (req, res) => {
+//   await User.find()
+//     .then((result) => {
+//       res.send(result);
+//     })
+//     .catch((error) => {
+//       res.status(500).send({
+//         message: error.message || "some error while retrieving users",
+//       });
+//     });
+// };
+
 exports.findAll = async (req, res) => {
   try {
     // Verify token before allowing access to the protected route
@@ -78,6 +90,24 @@ exports.findAll = async (req, res) => {
 };
 
 /** USER REGISTER */
+// exports.create = (req, res) => {
+//     const user = new User({
+//         userName : req.body.userName,
+//         accountNumber : req.body.accountNumber,
+//         emailAddress : req.body.emailAddress,
+//         identityNumber : req.body.identityNumber
+//     })
+
+//     user.save(user)
+//     .then((result)=>{
+//         res.send(result)
+//     }).catch((error)=>{
+//         res.status(409).send({
+//             message:error.message || "some error while add new user"
+//         })
+//     })
+// }
+
 exports.create = async (req, res) => {
   const email = req.body.emailAddress;
   const accountNumber = req.body.accountNumber;
@@ -89,7 +119,7 @@ exports.create = async (req, res) => {
     } else {
       // res.send({message : 'User data yesa'})
       //  const token = jwt.sign({})
-      const hashedAccountNumber = await bcrypt.hash(accountNumber, 10);
+      // const hashedAccountNumber = await bcrypt.hash(accountNumber, 10);
 
       const user = new User({
         userName: req.body.userName,
@@ -127,22 +157,29 @@ exports.getById = async (req, res) => {
 exports.editData = async (req, res) => {
   const userId = req.params.id;
   const dataUpdated = req.body;
-  User.findByIdAndUpdate(userId, dataUpdated)
-    .then((result) => {
-      if (!result) {
-        res.status(404).send({
-          message: "Data User Not Found",
+
+  try {
+    await verifyToken(req, res, async () => {
+      await User.findByIdAndUpdate(userId, dataUpdated)
+        .then((result) => {
+          if (!result) {
+            res.status(404).send({
+              message: "Data User Not Found",
+            });
+          }
+          res.send({
+            dataUpdated,
+          });
+        })
+        .catch((error) => {
+          res.status(409).send({
+            message: error.message || "Some error while update data user",
+          });
         });
-      }
-      res.send({
-        dataUpdated,
-      });
-    })
-    .catch((error) => {
-      res.status(409).send({
-        message: error.message || "Some error while update data user",
-      });
     });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 /** DELETE USER */
