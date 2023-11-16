@@ -183,10 +183,12 @@ exports.editData = async (req, res) => {
 };
 
 /** DELETE USER */
-exports.delete = (req, res) => {
+exports.delete = async(req, res) => {
   const userId = req.params.id;
 
-  User.findOneAndDelete(userId)
+ try{
+  await verifyToken(req, res, async() =>{
+    User.findOneAndDelete(userId)
     .then((result) => {
       if (!result) {
         res.status(404).send({
@@ -202,18 +204,26 @@ exports.delete = (req, res) => {
         message: error.message || "Some error occur while deteled data user",
       });
     });
+  })
+ }catch(err){
+  res.status(500).json({ message: "Internal Server Error" });
+ }
+
+
 };
 
 /** GET DATA USER BY ACCOUNT NUMBER*/
 exports.getUserByAccountNumber = async (req, res) => {
   const userAccountNumber = req.params.id;
   try {
+  await verifyToken(req,res, async() => {
     const findUser = await User.findOne({ accountNumber: userAccountNumber });
     if (!findUser) {
       res.send({ message: "User not found" });
     } else {
       res.send(findUser);
     }
+  })
   } catch {
     res.status(500).send({ message: "Internal server error" });
   }
@@ -223,12 +233,14 @@ exports.getUserByAccountNumber = async (req, res) => {
 exports.getUserByIdentityNumber = async (req, res) => {
   const userIdentityNumber = req.params.id;
   try {
+   await verifyToken(req,res, async()=>{
     const findUser = await User.findOne({ identityNumber: userIdentityNumber });
     if (!findUser) {
       res.send({ message: "User not found" });
     } else {
       res.send(findUser);
     }
+   })
   } catch {
     res.status(500).send({ message: "Internal server error" });
   }
