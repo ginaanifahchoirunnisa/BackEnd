@@ -10,7 +10,6 @@ const bodyParser = require("body-parser");
 
 const app = express();
 app.use(bodyParser.json());
-// const jwtSign = util.promisify(jwt.sign);
 
 /** secret key for jwt */
 const secretKey = "g1Yzdm93oF9x8NuE2OqJ9LpRz3Hs6TbV";
@@ -18,7 +17,7 @@ const secretKey = "g1Yzdm93oF9x8NuE2OqJ9LpRz3Hs6TbV";
 /** USER LOGIN */
 exports.loginUser = async (req, res) => {
   const email = req.body.emailAddress;
-  const accountNumber = req.body.accountNumber;
+ // const accountNumber = req.body.accountNumber;
 
   try {
     const existingUserCheck = await User.findOne({ emailAddress: email });
@@ -27,7 +26,7 @@ exports.loginUser = async (req, res) => {
           expiresIn: "1h",
         });
       
-        return res.json({ message: "Login successful" , token});
+        return res.json({token});
       } else {
           return res.status(401).json({error : 'Invalid Credentials'})
       }
@@ -41,18 +40,57 @@ exports.loginUser = async (req, res) => {
 
 };
 
+/** VERIFY TOKEN  */
+const verifyToken = async (req, res, next) => {
+  const token = req.headers.authorization;
+  console.log('INI TOKEN =>  ', token)
+
+  if(!token){
+    return res.status(401).json({error : 'Unauthorized : No token provided'})
+  }
+
+  //const decoded = await jwtVerify(token, secretKey);
+  //console.log('INI YA DECODED NYA ==> ', decoded)
+
+  try {
+    // Verify the token
+    const decoded = await jwt.verify(token, secretKey);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+}
+
 /** GET ALL DATA USER */
+// exports.findAll = async (req, res) => {
+//   await User.find()
+//     .then((result) => {
+//       res.send(result);
+//     })
+//     .catch((error) => {
+//       res.status(500).send({
+//         message: error.message || "some error while retrieving users",
+//       });
+//     });
+// };
+
 exports.findAll = async (req, res) => {
-  await User.find()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((error) => {
-      res.status(500).send({
-        message: error.message || "some error while retrieving users",
-      });
+try{
+   // Verify token before allowing access to the protected route
+  await verifyToken(req,res, async () => {
+    const users = await User.find();
+    res.json(users)
+  })
+}catch(error){
+  console.error(error);
+    res.status(500).json({
+      message: error.message || 'Some error while retrieving users',
     });
+}
 };
+
 
 /** USER REGISTER */
 // exports.create = (req, res) => {
