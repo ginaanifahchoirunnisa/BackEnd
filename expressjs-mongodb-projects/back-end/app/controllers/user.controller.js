@@ -10,6 +10,7 @@ const bodyParser = require("body-parser");
 
 const app = express();
 app.use(bodyParser.json());
+// const jwtSign = util.promisify(jwt.sign);
 
 /** secret key for jwt */
 const secretKey = "g1Yzdm93oF9x8NuE2OqJ9LpRz3Hs6TbV";
@@ -21,16 +22,20 @@ exports.loginUser = async (req, res) => {
 
   try {
     const existingUserCheck = await User.findOne({ emailAddress: email });
-    if (existingUserCheck) {
-    //   const token = jwt.sign({ userId: user.id }, secretKey, {
-    //     expiresIn: "1h",
-    //   });
-      res.json({ message: "Login successful", token });
-    } else {
-        // return res.status(401).json({error : 'Invalid Credentials'})
-    }
+      if (existingUserCheck) {
+        const token = jwt.sign({ userId: existingUserCheck.id }, secretKey, {
+          expiresIn: "1h",
+        });
+      
+        return res.json({ message: "Login successful" , token});
+      } else {
+          return res.status(401).json({error : 'Invalid Credentials'})
+      }
+   // res.send(existingUserCheck)
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    console.log('ini eero',error)
+        
+    res.status(500).json(error);
   }
 
 
@@ -156,12 +161,9 @@ exports.delete = (req, res) => {
     });
 };
 
-/** GET DATA USER BY */
+/** GET DATA USER BY ACCOUNT NUMBER*/
 exports.getUserByAccountNumber = async(req,res)=>{
     const userAccountNumber = req.params.id
-
-    // res.send(userAccountNumber)
-
    try{
 
         const findUser = await User.findOne({accountNumber : userAccountNumber})
@@ -170,7 +172,6 @@ exports.getUserByAccountNumber = async(req,res)=>{
         }else{
             res.send(findUser)
         }
-       // res.send(findUser)
     }catch{
         res.status(500).send({message:'Internal server error'})
 
@@ -178,11 +179,9 @@ exports.getUserByAccountNumber = async(req,res)=>{
 }
 
 
+/** GET BY IDENTITY NUMBER */
 exports.getUserByIdentityNumber = async(req,res)=>{
   const userIdentityNumber = req.params.id
-
-  // res.send(userIdentityNumber)
-
  try{
 
       const findUser = await User.findOne({identityNumber : userIdentityNumber})
@@ -191,7 +190,6 @@ exports.getUserByIdentityNumber = async(req,res)=>{
       }else{
           res.send(findUser)
       }
-     // res.send(findUser)
   }catch{
       res.status(500).send({message:'Internal server error'})
 
